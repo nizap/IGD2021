@@ -80,6 +80,11 @@ public class TrapControl : MonoBehaviour
         }
     }
 
+    // this method is used to restore a previous state after a minigame
+    public void restore(Vector3 location) {
+        transform.position = location;
+    }
+
     public void playDropAudio()
     {
         audioSource.PlayOneShot(dropAudioClip);

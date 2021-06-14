@@ -53,7 +53,7 @@ public class TurnManager : MonoBehaviour
     private double sleepTimeAI = 0.0;
     private bool wantsToUseItemAI = false;
 
-    private enum TurnState {MOVING_CAM_TO_DIE, ROLLING_DIE, MOVING_CAM_TO_PLAYER, ACCEPTING_INPUT, EXECUTING_ACTION, SHOWING_SHOP, APPLYING_TILE_EFFECT, TURN_ENDED,};
+    private enum TurnState {MOVING_CAM_TO_DIE, ROLLING_DIE, MOVING_CAM_TO_PLAYER, ACCEPTING_INPUT, EXECUTING_ACTION, SHOWING_SHOP, APPLYING_TILE_EFFECT, TURN_ENDED, SCOREBOARD, SCOREBOARD_END,};
     private TurnState currentState;
 
     // currently executed FSM
@@ -62,7 +62,8 @@ public class TurnManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
-        moveToDie();
+        restoreGameState();
+        // moveToDie();
     }
 
     // Update is called once per frame
@@ -123,6 +124,29 @@ public class TurnManager : MonoBehaviour
         else if (currentState == TurnState.TURN_ENDED) {
             finishTurn();
         }
+        else if (currentState == TurnState.SCOREBOARD) {
+
+            // TODO: replace with an amount of credits based on the rank each player achieved in the last minigame
+            playerBelongings.ForEach((belongings) => {
+                belongings.addCreditAmount((int) UnityEngine.Random.Range(0f, 3.99f));
+            });
+
+            // TODO: does not work yet
+            // proposed solution: add a minigame state, when the minigame + scorescreen are over, check whether there is a true party person
+            // then do animations etc (before starting the next turn)
+            updateTruePartyState();
+
+            currentState = TurnState.SCOREBOARD_END;
+        }
+        else if (currentState == TurnState.SCOREBOARD_END && 
+            playerBelongings[0].animationsAreDone() && 
+            playerBelongings[1].animationsAreDone() && 
+            playerBelongings[2].animationsAreDone() && 
+            playerBelongings[3].animationsAreDone() &&
+            currentActionFSM.update()) {
+           
+            finishRound();
+        }
         
         foreach (PlayerAction action in interactions.actions) {        
             if (currentState == TurnState.ACCEPTING_INPUT && actionPoints > 0) {
@@ -136,10 +160,23 @@ public class TurnManager : MonoBehaviour
         updateHUD();
     }
 
+    /// call this when a round (4 player turns + minigame) is over; it will either start a new round or trigger the "game over"
+    private void finishRound() {
+        activePlayer = 0;
+        round++;
+
+        if (round >= numberOfRounds) {
+            endGame();
+        } 
+        else {
+            moveToDie();
+        }
+    }
+
     /// returns whether the current player is an AI
     private bool isAI() {
         // TODO: real implementation, this is a dummy for testing
-        return true;
+        return activePlayer > 1;
     }
 
     // call this method whenever an FSM ended which might modify the credit amounts of players
@@ -316,14 +353,20 @@ public class TurnManager : MonoBehaviour
             }
         });
 
+
+        preserveGameState();
+
         if (team1 == 0 || team2 == 0) {
             Debug.Log("Loading a free-for-all minigame.");
+            LoadingManager.Instance.LoadMiniGame(MiniGameType.freeForAll);
         }
         else if (team1 == team2) {
             Debug.Log("Loading a 2v2 minigame.");
+            LoadingManager.Instance.LoadMiniGame(MiniGameType.teamVsTeam);
         } 
         else {
             Debug.Log("Loading a 1v3 minigame.");
+            LoadingManager.Instance.LoadMiniGame(MiniGameType.singleVsTeam);
         }
         // add a random amount of credits
         playerBelongings.ForEach((belongings) => {
@@ -558,8 +601,6 @@ public class TurnManager : MonoBehaviour
 
     /// AI attempts to use an item; if an item should be used, wantsToUseItemAI is set to true.
     private void useItemAttemptAI() {
-        Debug.Log(UnityEngine.Random.value);
-        Debug.Log(playerBelongings[activePlayer].hasAnItem());
         if (UnityEngine.Random.value > 0.75 && playerBelongings[activePlayer].hasAnItem()) {
             PlayerAction.Type useItemAction = itemDB.getItem(playerBelongings[activePlayer].getFirstItem()).associatedAction;
             if (interactions.canUse(useItemAction)) {
@@ -591,6 +632,102 @@ public class TurnManager : MonoBehaviour
         else {
             // wrong action is selected, next action
             interactions.nextAction();
+        }
+    }
+
+
+
+
+     // this method is responsible for storing the game state before a minigame is loaded
+    // the state is stored in the StatePreserver singleton
+    // make sure that you add anything which must be stored between minigames
+    private void preserveGameState() {
+        StatePreserver.Instance.boardState = new StatePreserver.BoardState();
+
+        StatePreserver.Instance.gameStarted = false;
+        StatePreserver.Instance.boardState.truePartyPerson = truePartyPerson;
+        StatePreserver.Instance.boardState.round = round;
+
+        foreach (GameObject t in GameObject.FindGameObjectsWithTag("Tile")) { // for each tile
+            if ((t.GetComponent(typeof(Tile)) as Tile).hasGoldenBrick()) {
+                StatePreserver.Instance.boardState.brickTile = new StatePreserver.TileCoord();
+                StatePreserver.Instance.boardState.brickTile.x = t.transform.position.x;
+                StatePreserver.Instance.boardState.brickTile.z = t.transform.position.z;
+            }
+
+            // TODO: preserve traps
+        }
+
+        StatePreserver.Instance.playerStates = new List<StatePreserver.PlayerState>();
+        for (int i = 0; i < 4; i++) {
+            StatePreserver.Instance.playerStates.Add(new StatePreserver.PlayerState());
+            StatePreserver.Instance.playerStates[i].position = players[i].getPlayerPosition();
+            StatePreserver.Instance.playerStates[i].credits = playerBelongings[i].creditAmount();
+            StatePreserver.Instance.playerStates[i].bricks = playerBelongings[i].goldenBricks();
+            StatePreserver.Instance.playerStates[i].items = playerBelongings[i].getItems();
+            StatePreserver.Instance.playerStates[i].currentTile = new StatePreserver.TileCoord();
+            StatePreserver.Instance.playerStates[i].currentTile.x = playerData[i].currentTile().transform.position.x;
+            StatePreserver.Instance.playerStates[i].currentTile.z = playerData[i].currentTile().transform.position.z;
+            StatePreserver.Instance.playerStates[i].distanceWalked = playerData[i].getDistanceWalked();
+        }
+    }
+
+    // this method is responsible for restoring the game state after a minigame has ended
+    // the special handling of the first round (no previous state) is also handled here
+    // make sure that you restore anything you have saved in preserveGameState() here 
+    private void restoreGameState() {
+        if (StatePreserver.Instance.gameStarted) {
+            Debug.Log("First round!");
+            // very first round
+            moveToDie();
+        }
+        else {
+            Debug.Log("Returning from a minigame!");
+
+            // a minigame just ended, show the scoreboard
+            
+            currentState = TurnState.SCOREBOARD;
+
+            // TODO: is the scoreboard implemented by group C or by us?
+
+            // restore the last state
+            // ======================
+
+            // restore general data
+            truePartyPerson = StatePreserver.Instance.boardState.truePartyPerson;
+            round = StatePreserver.Instance.boardState.round;
+
+            // restore the tiles, i.e. golden brick, trap and player locations
+            foreach (GameObject t in GameObject.FindGameObjectsWithTag("Tile")) { // for each tile
+                Tile tile = (t.GetComponent(typeof(Tile)) as Tile);
+
+                if (t.transform.position.x == StatePreserver.Instance.boardState.brickTile.x && 
+                    t.transform.position.z == StatePreserver.Instance.boardState.brickTile.z) {
+
+                    brickManager.restore(tile, t.transform);
+
+                    // TODO: restore traps
+                }
+
+                for (int i = 0; i < 4; i++) {
+                    if (t.transform.position.x == StatePreserver.Instance.playerStates[i].currentTile.x && 
+                        t.transform.position.z == StatePreserver.Instance.playerStates[i].currentTile.z) {
+
+                        playerData[i].moveTo(tile);
+                        players[i].TeleportTo(StatePreserver.Instance.playerStates[i].position);
+                    }
+                }
+            }
+
+            // restore player data and belongings except the tiles/positions, this was done above
+            for (int i = 0; i < 4; i++) {
+                foreach (ItemD.Type item in StatePreserver.Instance.playerStates[i].items) {
+                    playerBelongings[i].addItem(item);
+                }
+
+                playerBelongings[i].restore(StatePreserver.Instance.playerStates[i].credits, StatePreserver.Instance.playerStates[i].bricks);
+                playerData[i].restore(StatePreserver.Instance.playerStates[i].distanceWalked);
+            }
         }
     }
 }

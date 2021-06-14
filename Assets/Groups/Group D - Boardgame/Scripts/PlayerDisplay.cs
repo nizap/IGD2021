@@ -98,8 +98,21 @@ public class PlayerDisplay : MonoBehaviour
         return items.Count > 0;
     }
 
+    /// returns the first item the player currently has
+    /// ensure that he hasAnItem() before calling this method
     public ItemD.Type getFirstItem() {
         return items[0];
+    }
+
+    /// returns all items this player currently has
+    public List<ItemD.Type> getItems() {
+        List<ItemD.Type> res = new List<ItemD.Type>();
+
+        foreach (ItemD.Type item in items) {
+            res.Add(item);
+        }
+
+        return res;
     }
 
     // removes the given item from this player's inventory
@@ -151,6 +164,12 @@ public class PlayerDisplay : MonoBehaviour
     /// returns the number of golden bricks this player currently has
     public int goldenBricks() {
         return bricks;
+    }
+
+    // this method is used to restore a previous state after a minigame
+    public void restore(int numberOfCredits, int numberOfBricks) {
+        credits = numberOfCredits;
+        bricks = numberOfCredits;
     }
 
     private void animateCreditBobbing() {

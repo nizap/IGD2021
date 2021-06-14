@@ -992,6 +992,12 @@ public class BoardgameController : MonoBehaviour
         return !airborne && animationCompleted;
     }
 
+    
+    public Vector3 getPlayerPosition() {
+        return transform.position;
+    }
+
+
     #endregion
 }
 
