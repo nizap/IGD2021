@@ -13,6 +13,11 @@ public class TurnManager : MonoBehaviour
         UP,
         DOWN,
     }
+
+    // whether only a dummy minigame should be loaded, 
+    // should be used for testing this scene 
+    public bool useTestMinigames = false;
+
     // number of rounds until the game ends
     public int numberOfRounds = 10;
 
@@ -53,7 +58,7 @@ public class TurnManager : MonoBehaviour
     private double sleepTimeAI = 0.0;
     private bool wantsToUseItemAI = false;
 
-    private enum TurnState {MOVING_CAM_TO_DIE, ROLLING_DIE, MOVING_CAM_TO_PLAYER, ACCEPTING_INPUT, EXECUTING_ACTION, SHOWING_SHOP, APPLYING_TILE_EFFECT, TURN_ENDED, SCOREBOARD, SCOREBOARD_END,};
+    private enum TurnState {MOVING_CAM_TO_DIE, ROLLING_DIE, MOVING_CAM_TO_PLAYER, ACCEPTING_INPUT, EXECUTING_ACTION, SHOWING_SHOP, APPLYING_TILE_EFFECT, TURN_ENDED, MINIGAME, SCOREBOARD, SCOREBOARD_END,};
     private TurnState currentState;
 
     // currently executed FSM
@@ -64,6 +69,16 @@ public class TurnManager : MonoBehaviour
     void Start() {
         restoreGameState();
         // moveToDie();
+
+        if (useTestMinigames) {
+            // replace the real minigame list with dummies
+            GameList.FREE_FOR_ALL_LIST.Clear();
+            GameList.FREE_FOR_ALL_LIST.Add(new TestingGame());
+            GameList.SINGLE_VS_TEAM_LIST.Clear();
+            GameList.SINGLE_VS_TEAM_LIST.Add(new TestingGame());
+            GameList.TEAM_VS_TEAM_LIST.Clear();
+            GameList.TEAM_VS_TEAM_LIST.Add(new TestingGame());
+        }
     }
 
     // Update is called once per frame
@@ -262,19 +277,17 @@ public class TurnManager : MonoBehaviour
     }
 
     private void finishTurn() {
-        // next player
-        activePlayer++;
 
-        if (activePlayer == 4) {
+        if (activePlayer == 3) {
             loadMinigame();
-            activePlayer = 0;
-            round++;
+            // state is changed when the boardgame scene is reloaded
+            // do nothing in the MINIGAME state, i.e. game is "paused"
+            currentState = TurnState.MINIGAME; 
         }
-
-        if (round >= numberOfRounds) {
-            endGame();
-        } 
         else {
+            // next player 
+            // note the order: keep activePlayer in a valid range {0,1,2,3}
+            activePlayer++;
             moveToDie();
         }
     }
@@ -296,7 +309,7 @@ public class TurnManager : MonoBehaviour
             EndScreen.playerStats[i] = new EndScreen.PlayerStats(i, playerBelongings[i].goldenBricks(), playerBelongings[i].creditAmount());
         }
 
-        SceneManager.LoadScene("Groups/Group D - Boardgame/Scenes/EndScreen");
+        SceneManager.LoadScene("Assets/Groups/Group D - Boardgame/Scenes/EndScreen");
     }
 
     private void startNewTurn() {
