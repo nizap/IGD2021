@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class LoadingManager : MonoBehaviour
 {
     public static LoadingManager Instance;
-    private GameObject randomPickerType;
     private Text freeForAll;
     private Text singleVsTeam;
     private Text teamVsTeam;
@@ -17,11 +14,12 @@ public class LoadingManager : MonoBehaviour
 
     private string nextScene;
 
+    public GameObject _randomPicker;
+
     //this method is just for testing, it must be removed at the end.
     void Start()
-    {
-        //Debug.Log("Launching Loading Manager");
-        //LoadMiniGame(MiniGameType.singleVsTeam);
+    {   
+        
     }
 
     private void Awake () {
@@ -33,9 +31,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    //Random picker Prefab should be added to the scene in order to use this
     public void LoadMiniGame (MiniGameType miniGameType) {
-        randomPickerType = GameObject.Find("RandomPickerType");
 
         int gameType = 0;
         List<MiniGame> games = null;
@@ -88,28 +84,25 @@ public class LoadingManager : MonoBehaviour
         return elements;
     }
 
-    //Navigate from a Minigame into the main board game
-    //This is intended to be used only from the MiniGameFinished method
     public void LoadMainBoardGame() {
-        //Display Loading Screen
-
-
         //Load main board if we are not in it
         SceneManager.LoadSceneAsync(GameList.MAIN_BOARD_SCENE);
     }
-
-    //Loading Screen in between the board and minigame
+    
     private void DisplayLoadingScreen() {
-        //TODO
+
     }
 
     private void HideLoadingScreen() {
-        //TODO
+        //MyGame game = new MyGame("My Awesome Game", "SceneName", MiniGameType.freeForAll);
+        //game.sceneName = "WERR";
     }
 
     //Display UI that shows roulette to select from a random game
     private void showPicker(int gameType, List<MiniGame> games, int selectedGame) {
-        randomPickerType.SetActive(true);
+        var randomPicker = Instantiate(_randomPicker);
+        //randomPicker.SetActive(true);
+
         freeForAll = GameObject.Find("FreeForAll").GetComponent<Text>();
         singleVsTeam = GameObject.Find("SingleVsTeam").GetComponent<Text>();
         teamVsTeam = GameObject.Find("TeamVsTeam").GetComponent<Text>();
@@ -117,11 +110,6 @@ public class LoadingManager : MonoBehaviour
         banner.enabled= false;
 
         StartCoroutine(randomPickerAnimation(gameType, GameList.GAMES[gameType], games, selectedGame));
-    }
-
-    //Hides UI from picker
-    private void hidePicker() {
-        randomPickerType.SetActive(false);
     }
 
     private IEnumerator randomPickerAnimation(int index, string bannerText, List<MiniGame> games, int selectedGame)
@@ -227,12 +215,8 @@ public class LoadingManager : MonoBehaviour
         banner.text = bannerText;
         banner.enabled= true;
         yield return new WaitForSeconds(1f);
-
-        this.hidePicker();
         SceneManager.LoadSceneAsync(this.nextScene);
     }
-
-    //Set flag if coming from minigame?
 
 }
 

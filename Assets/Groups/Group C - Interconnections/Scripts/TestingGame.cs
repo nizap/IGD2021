@@ -1,25 +1,14 @@
-
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-/**
- * This class extends the MiniGame abstract class
- * Implementing the 3 required methods: getDisplayName, getSceneName, getMiniGameType
- * 
- */
 public class TestingGame : MiniGame
 {
-
-    public GameObject myPlayer;
-    public GameObject secondPlayer;
-    
+   
 
     public override string getDisplayName(){
-        return "My Awesome Game";
+        return "Game  Title";
     }
     public override string getSceneName(){
-        return "MyAwesomeGameScene";
+        return "Example";
     }
 
     public override MiniGameType getMiniGameType()
@@ -27,31 +16,26 @@ public class TestingGame : MiniGame
         return MiniGameType.freeForAll;
     }
 
-    private void Start()
-    {
+    void Start()
+    {   
         //Create list of player inputs from the players in the scene
-        var playerInputs = new List<PlayerInput> { myPlayer.GetComponent<PlayerInput>(), secondPlayer.GetComponent<PlayerInput>() };
+        //var playerInputs = new List<PlayerInput> { myPlayer.GetComponent<PlayerInput>(), secondPlayer.GetComponent<PlayerInput>() };
 
         //This assigns the player input in the order they were given in the array
-        InputManager.Instance.AssignPlayerInput(playerInputs);
-        
-    }
+        //InputManager.Instance.AssignPlayerInput(playerInputs);
 
-    void Update()
-    {
-        //If your game has already ended you can call the MiniGameFinished method
-        bool myGameEndingCondition = false;
-        if (myGameEndingCondition == true)
-        {
-            //Create array of positions with player ids, this also works in case there are multiple players in one position
-            int[] first = { 0 };
-            int[] second = { 1 };
-            int[] third = { 2 };
-            int[] fourth = { 3 };
+        PlayerPrefs.SetString("PLAYER1_NAME", "Brenda");
+        PlayerPrefs.SetString("PLAYER2_NAME", "Jovanna");
+        PlayerPrefs.SetString("PLAYER3_NAME", "Myriem");
+        PlayerPrefs.SetString("PLAYER4_NAME", "Jose");
 
-            //Note this is still work in progress, but ideally you will use it like this
-            MiniGameFinished(firstPlace: first, secondPlace: second, thirdPlace: third, fourthPlace: fourth);
-        }
+        //base.MiniGameFinished(new int []{1,2}, new int []{3,4}, new int []{},new int []{});
+        MiniGameFinished(new int []{3,2,4}, new int []{1}, new int []{},new int []{});
+        //base.MiniGameFinished(new int []{2}, new int []{4}, new int []{1},new int []{3});
+        Debug.Log(PlayerPrefs.GetInt("PLAYER1_PLACE"));
+        Debug.Log(PlayerPrefs.GetInt("PLAYER2_PLACE"));
+        Debug.Log(PlayerPrefs.GetInt("PLAYER3_PLACE"));
+        Debug.Log(PlayerPrefs.GetInt("PLAYER4_PLACE"));
 
     }
 }
