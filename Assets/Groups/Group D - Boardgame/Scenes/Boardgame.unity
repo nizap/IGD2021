@@ -48668,7 +48668,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: e56f48543a769984c897a8b4ee49b69e, type: 2}
   _doNotDistroyOnLoad:
     Mode: 0
-    m_constantValue: 0
+    m_constantValue: 1
     Variable: {fileID: 0}
   onSteamInitalized:
     m_PersistentCalls:

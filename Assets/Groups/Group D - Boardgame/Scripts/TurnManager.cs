@@ -191,7 +191,8 @@ public class TurnManager : MonoBehaviour
     /// returns whether the current player is an AI
     private bool isAI() {
         // TODO: real implementation, this is a dummy for testing
-        return activePlayer > 1;
+        //return activePlayer > 1;
+        return false;
     }
 
     // call this method whenever an FSM ended which might modify the credit amounts of players
@@ -381,15 +382,6 @@ public class TurnManager : MonoBehaviour
             Debug.Log("Loading a 1v3 minigame.");
             LoadingManager.Instance.LoadMiniGame(MiniGameType.singleVsTeam);
         }
-        // add a random amount of credits
-        playerBelongings.ForEach((belongings) => {
-            belongings.addCreditAmount((int) UnityEngine.Random.Range(0f, 3.99f));
-        });
-
-        // TODO: does not work yet
-        // proposed solution: add a minigame state, when the minigame + scorescreen are over, check whether there is a true party person
-        // then do animations etc (before starting the next turn)
-        updateTruePartyState();
     }
 
     /// executes the given action
