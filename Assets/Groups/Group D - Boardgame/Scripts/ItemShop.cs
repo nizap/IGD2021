@@ -8,6 +8,8 @@ public class ItemShop : MonoBehaviour
     public ItemDatabase itemDB;
     public Text priceText;
     public Text descriptionText;
+    public Text InsufficientCreditsText;
+    public Text inventoryFullText;
     public Transform itemShowCase; // location for item display
 
     public Vector3 windowPosition;
@@ -72,6 +74,7 @@ public class ItemShop : MonoBehaviour
     public void close() {
         isActive = false;
         this.transform.position = locationThatIsNeverSeen;
+        Destroy(displayedItemObject);
     }
 
     public ItemD.Type getSelectedItem() {

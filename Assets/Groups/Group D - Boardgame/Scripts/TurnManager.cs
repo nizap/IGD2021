@@ -328,6 +328,19 @@ public class TurnManager : MonoBehaviour
             hud.updateActionPoints(actionPoints);
             int price = itemDB.getItem(itemShop.getSelectedItem()).getPrice();
             playerBelongings[activePlayer].setDisplayedCreditCosts(price);
+            if(playerBelongings[activePlayer].creditAmount() < price){
+                itemShop.InsufficientCreditsText.enabled = true;
+            }
+            else{
+                itemShop.InsufficientCreditsText.enabled = false;
+            }
+            if(playerBelongings[activePlayer].hasSpaceForAnItem()){
+                itemShop.inventoryFullText.enabled = false;
+            }
+            else{
+                itemShop.inventoryFullText.enabled = true;
+            }
+            
         }
         else {
             hud.updateActionPoints(actionPoints);
@@ -433,6 +446,7 @@ public class TurnManager : MonoBehaviour
         int price = itemDB.getItem(item).getPrice();
 
         if (playerBelongings[activePlayer].creditAmount() >= price && playerBelongings[activePlayer].hasSpaceForAnItem()) {
+            itemShop.InsufficientCreditsText.enabled = false;
             // buy the item
             playerBelongings[activePlayer].addCreditAmount(-price);
             playerBelongings[activePlayer].addItem(item);
@@ -444,7 +458,6 @@ public class TurnManager : MonoBehaviour
             itemShop.close();           
         }
         // else: cannot buy item
-        // TODO: add feedback?!
     }
 
     public void reactToMove(Directions direction, int playerNumber)
