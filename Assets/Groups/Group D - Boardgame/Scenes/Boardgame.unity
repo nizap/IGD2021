@@ -24800,6 +24800,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4bac36aa3a3714340ab9222e045c77d1, type: 3}
+--- !u!114 &756381948 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5344789582721282953, guid: a2a94bad0a157224e99f2283e5d22c68,
+    type: 3}
+  m_PrefabInstance: {fileID: 961553785777273779}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &756714316
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -69235,7 +69247,7 @@ PrefabInstance:
     - target: {fileID: 961553785830364132, guid: a2a94bad0a157224e99f2283e5d22c68,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 250
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 961553785830364132, guid: a2a94bad0a157224e99f2283e5d22c68,
         type: 3}
@@ -69292,6 +69304,16 @@ PrefabInstance:
       propertyPath: windowPosition.x
       value: 0.2
       objectReference: {fileID: 0}
+    - target: {fileID: 8547446293589358169, guid: a2a94bad0a157224e99f2283e5d22c68,
+        type: 3}
+      propertyPath: notEnoughCreditsText
+      value: 
+      objectReference: {fileID: 756381948}
+    - target: {fileID: 8547446293589358169, guid: a2a94bad0a157224e99f2283e5d22c68,
+        type: 3}
+      propertyPath: InsufficientCreditsText
+      value: 
+      objectReference: {fileID: 756381948}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a2a94bad0a157224e99f2283e5d22c68, type: 3}
 --- !u!135 &1559682982562475249
